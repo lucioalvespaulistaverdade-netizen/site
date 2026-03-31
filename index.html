@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paulista de Verdade</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  margin: 0;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+h2 {
+  margin-top: 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Paulista de Verdade</h1>
+  <div id="news"></div>
+</div>
+
+<script>
+const feeds = [
+  "https://api.allorigins.win/raw?url=https://falape.com/feed/",
+  "https://api.allorigins.win/raw?url=https://g1.globo.com/rss/g1/pernambuco/",
+  "https://api.allorigins.win/raw?url=https://blogdomagno.com.br/feed/",
+  "https://api.allorigins.win/raw?url=https://jamildo.com/feed"
+];
+
+async function loadFeeds() {
+  let allItems = [];
+
+  for (let url of feeds) {
+    try {
+      let res = await fetch(url);
+      let text = await res.text();
+
+      let parser = new DOMParser();
+      let xml = parser.parseFromString(text, "text/xml");
+
+      let items = xml.querySelectorAll("item");
+
+      items.forEach(item => {
+        let title = item.querySelector("title")?.textContent;
+        let link = item.querySelector("link")?.textContent;
+        let desc = item.querySelector("description")?.textContent;
+
+        let imgMatch = desc?.match(/<img.*?src="(.*?)"/);
+        let image = imgMatch ? imgMatch[1] : null;
+
+        if (image) {
+          allItems.push({
+            title,
+            link,
+            desc,
+            image
+          });
+        }
+      });
+
+    } catch (e) {
+      console.log("Erro no feed:", e);
+    }
+  }
+
+  render(allItems);
+}
+
+function render(news) {
+  const container = document.getElementById("news");
+
+  news.slice(0, 20).forEach(n => {
+    const el = document.createElement("div");
+    el.className = "card";
+
+    el.innerHTML = `
+      <img src="${n.image}">
+      <div class="card-body">
+        <h2>${n.title}</h2>
+        <p>${n.desc.substring(0, 120)}...</p>
+        <a href="${n.link}" target="_blank">Ler mais</a>
+      </div>
+    `;
+
+    container.appendChild(el);
+  });
+}
+
+loadFeeds();
+</script>
+
+</body>
+</html>
