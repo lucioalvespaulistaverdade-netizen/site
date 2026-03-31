@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paulista de Verdade</title>
+<title>Paulista da Verdade</title>
 
 <style>
 body {
@@ -44,7 +44,7 @@ h2 {
 <body>
 
 <div class="container">
-  <h1>Paulista de Verdade</h1>
+  <h1>Paulista da Verdade</h1>
   <div id="news"></div>
 </div>
 
@@ -64,13 +64,17 @@ async function loadFeeds() {
       let res = await fetch(url);
       let data = await res.json();
 
+      if (!data.items) continue;
+
       data.items.forEach(item => {
-        if (item.thumbnail) {
+        let image = item.thumbnail || item.enclosure?.link;
+
+        if (image) {
           allItems.push({
             title: item.title,
             link: item.link,
-            desc: item.description,
-            image: item.thumbnail
+            desc: item.description.replace(/<[^>]+>/g, ""),
+            image
           });
         }
       });
@@ -85,6 +89,11 @@ async function loadFeeds() {
 
 function render(news) {
   const container = document.getElementById("news");
+
+  if (!news.length) {
+    container.innerHTML = "<p>Erro ao carregar notícias.</p>";
+    return;
+  }
 
   news.slice(0, 20).forEach(n => {
     const el = document.createElement("div");
