@@ -50,10 +50,10 @@ h2 {
 
 <script>
 const feeds = [
-  "https://api.allorigins.win/raw?url=https://falape.com/feed/",
-  "https://api.allorigins.win/raw?url=https://g1.globo.com/rss/g1/pernambuco/",
-  "https://api.allorigins.win/raw?url=https://blogdomagno.com.br/feed/",
-  "https://api.allorigins.win/raw?url=https://jamildo.com/feed"
+  "https://api.rss2json.com/v1/api.json?rss_url=https://falape.com/feed/",
+  "https://api.rss2json.com/v1/api.json?rss_url=https://g1.globo.com/rss/g1/pernambuco/",
+  "https://api.rss2json.com/v1/api.json?rss_url=https://blogdomagno.com.br/feed/",
+  "https://api.rss2json.com/v1/api.json?rss_url=https://jamildo.com/feed"
 ];
 
 async function loadFeeds() {
@@ -62,27 +62,15 @@ async function loadFeeds() {
   for (let url of feeds) {
     try {
       let res = await fetch(url);
-      let text = await res.text();
+      let data = await res.json();
 
-      let parser = new DOMParser();
-      let xml = parser.parseFromString(text, "text/xml");
-
-      let items = xml.querySelectorAll("item");
-
-      items.forEach(item => {
-        let title = item.querySelector("title")?.textContent;
-        let link = item.querySelector("link")?.textContent;
-        let desc = item.querySelector("description")?.textContent;
-
-        let imgMatch = desc?.match(/<img.*?src="(.*?)"/);
-        let image = imgMatch ? imgMatch[1] : null;
-
-        if (image) {
+      data.items.forEach(item => {
+        if (item.thumbnail) {
           allItems.push({
-            title,
-            link,
-            desc,
-            image
+            title: item.title,
+            link: item.link,
+            desc: item.description,
+            image: item.thumbnail
           });
         }
       });
